@@ -416,11 +416,13 @@ FOREACH_LINEAR_REDUCTION_OP_MAP = {
 
 FOREACH_LINEAR_REDUCTION_OPS = list(FOREACH_LINEAR_REDUCTION_OP_MAP)
 
-# all/any are NOT linear reductions: validation showed S(reduction_dim)->P(...)
-# produces incorrect results. They only support sharding on non-reduction dims.
+# all/any only shard non-reduction dims: S(reduction_dim)->P(sum/product) gives
+# wrong results, and a P(max/min) output would leak into decomposition-derived
+# strategies (e.g. isin). bool_reduction_handler reduces such shards locally.
 NON_LINEAR_BOOL_REDUCTION_OPS = [
     aten.all.default,
     aten.all.dim,
+    aten.all.dims,
     aten.any.default,
     aten.any.dim,
     aten.any.dims,
