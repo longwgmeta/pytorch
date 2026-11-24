@@ -378,6 +378,22 @@ def load(
     Loads an :class:`ExportedProgram` previously saved with
     :func:`torch.export.save <torch.export.save>`.
 
+    A program can call tensor subclasses and custom autograd functions. Load
+    finds them by name in modules that are already imported. It does not import
+    the modules that the file names for them, because importing a module runs
+    its code. So import the module that defines each of them (its
+    ``__module__``), and the modules that register the pytree types of their
+    inputs, before loading::
+
+        import my_project.ops  # defines a custom autograd function the program calls
+
+        ep = torch.export.load("exported_program.pt2")
+
+    This is not a safety guarantee: as the warning above says, load unpickles
+    data, and other parts of the file, such as the specs of the program's
+    inputs and outputs or the inputs of other higher order ops, can import
+    modules too.
+
     Args:
         f (str | os.PathLike[str] | IO[bytes]): A file-like object (has to
          implement write and flush) or a string containing a file name.
