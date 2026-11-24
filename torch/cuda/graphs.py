@@ -632,6 +632,8 @@ class CUDAGraph(_CUDAGraph):
         if self._tracker is not None:
             self._tracker.stop()
             self._tracker = None
+        if _is_mem_pool(pool):
+            torch.cuda.memory._check_mem_pool_device(pool, torch.cuda.current_device())
         super().capture_begin(
             pool=_get_pool_id(pool), capture_error_mode=capture_error_mode
         )
@@ -1344,10 +1346,7 @@ class graph:
         if stream is None and self.__class__.default_capture_stream is None:
             self.__class__.default_capture_stream = torch.cuda.Stream()
 
-        pool_id = _get_pool_id(pool)
-        self.pool: tuple[()] | tuple[_POOL_HANDLE] = (
-            () if pool_id is None else (pool_id,)
-        )
+        self.pool: tuple[()] | tuple[_GraphPool] = () if pool is None else (pool,)
         self.capture_stream = (
             stream if stream is not None else self.__class__.default_capture_stream
         )

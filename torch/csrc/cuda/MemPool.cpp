@@ -25,5 +25,7 @@ void THCPMemPool_init(PyObject* module) {
                 std::move(allocator), is_user_created, use_on_oom, no_split);
           }))
       .def_property_readonly("id", &::at::cuda::MemPool::id)
+      .def_property_readonly(
+          "allocator_device", &::at::cuda::MemPool::allocator_device)
       .def("use_count", &::at::cuda::MemPool::use_count);
 }
